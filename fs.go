@@ -6,9 +6,35 @@ import (
 	"io/fs"
 )
 
+// OFOptions provides optional values for OpenFile() implementations.
+type OFOptions struct {
+	defaults Defaulter
+	values map[interface{}]interface{}
+}
+
+// Defaulter allows putting a Defaulter that can be called to set defaults.
+func (o *OFOptions) Defaulter(d Defaulter) {
+	o.defauls = d
+}
+
+// Put puts a key and value into the OFOptions. This is used by implementations of OpenFile()
+// to store their unique options. Like a Context value, keys should be private types to a package
+// to avoid collisions.
+func (o *OFOptions) Put(key, value interface{}) {
+	o.values[key] = value
+}
+
+// Value retrieves a value at given key. If key does not exist, the returned value is nil.
+func (o *OFOptions) Value(key interface{}) interface{} {
+	return o.values[key]
+}
+
+// Defaulter is a function that sets default values on OFOptions.
+type Defaulter func(o *OFOptions)
+
 // OFOption is an option for the OpenFiler.OpenFile() call. The passed "o" arg
 // is implementation dependent.
-type OFOption func(o interface{}) error
+type OFOption func(o *OFOptions) error
 
 // OpenFiler provides a more robust method of opening a file that allows for additional
 // capabilities like writing to files. The fs.File and options are generic and implementation
