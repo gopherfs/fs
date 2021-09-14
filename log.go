@@ -1,5 +1,4 @@
-// Package log provides the logging interface and default logger for packages at gopherfs.
-package log
+package fs
 
 import (
 	"log"

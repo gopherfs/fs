@@ -23,12 +23,12 @@ type OpenFiler interface {
 	OpenFile(name string, perm fs.FileMode, options ...OFOption) (fs.File, error)
 }
 
-// Writer provides a filesystem implememnting OpenFiler with a simple way to write and entire file.
+// Writer provides a filesystem implememnting OpenFiler with a simple way to write an entire file.
 type Writer interface {
 	OpenFiler
 
-	// Writes file with name (full path) a content to the file system. This implementation may
-	// return fs.ErrExist if the file already exists and the FileSystem is write once. The FileMode
-	// may or may not be honored, see the implementation details for more information.
+	// WriteFile writes a file's content to the file system. This implementation may
+	// return fs.ErrExist if the file already exists. The FileMode
+	// may or may not be honored by the implementation.
 	WriteFile(name string, data []byte, perm fs.FileMode) error
 }
