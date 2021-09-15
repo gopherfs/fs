@@ -1,13 +1,9 @@
-<!-- Place this tag in your head or just before your close body tag. -->
-<script async defer src="https://buttons.github.io/buttons.js"></script>
-
 ![gopherfs logo-sm](https://raw.githubusercontent.com/gopherfs/fs/main/cover.png)
 
 A set of io/fs filesystem abstractions for Go
 
 [![GoDoc](https://godoc.org/github.com/gopherfs/fs?status.svg)](https://godoc.org/github.com/gopherfs/fs) 
-<!-- Place this tag where you want the button to render. -->
-<a class="github-button" href="https://github.com/ntkme/github-buttons" data-icon="octicon-star" aria-label="Star ntkme/github-buttons on GitHub">Star</a>
+<iframe src="https://ghbtns.com/github-btn.html?user=gopherfs&repo=fs&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
 
 # Overview
 
