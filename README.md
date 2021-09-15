@@ -1,4 +1,4 @@
-![gopherfs logo-sm](https://cloud.githubusercontent.com/assets/png)
+![gopherfs logo-sm](https://raw.githubusercontent.com/gopherfs/fs/main/cover.png)
 
 A set of io/fs filesystem abstractions for Go
 
