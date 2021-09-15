@@ -1,5 +1,50 @@
-// Package fs contains abstractions not provided by io/fs needed to provide services such
-// as writing files.
+/* 
+Package fs contains abstractions not provided by io/fs needed to provide services such
+as writing files and utility functions that can be useful.
+
+OpenFiler provides OpenFile() similar to the "os" package when you need to write file data.
+
+Writer provides a WriteFile() similar to the "os" package when you want to write an entire file
+at once.
+
+OFOption provides a generic Option type for implementations of OpenFile() to use.
+
+This package also introduces a Merge() function to allow merging of filesystem content into
+another filesystem and the ability to tranform the content in some way (like optimizations).
+
+Using Merge to optimize embed.FS Javascript into a subdirectory "js":
+	optimized := simple.New(simple.WithPearson())
+
+	err := Merge(
+		optimized, 
+		somePkg.Embeded, 
+		"/js/",
+		WithTransform(
+			func(name string, content []byte) ([]byte, error){
+				// If we are in debug mode, we want unoptimized Javascript
+				if debug {
+					return content, nil
+				}
+				switch path.Ext(name){
+				case "js":
+					return optimizeJS(content)
+				case "go":
+					return nil, nil
+				}
+				return content, nil
+			},
+		),
+	)
+	if err != nil {
+		// Do something
+	}
+	optimized.RO()
+
+The above code takes embedded Javscript stored in an embed.FS and if we are not in a debug mode,
+optimized the Javscript with an optimizer. This allows us to keep our embed.FS local to the code
+that directly uses it and create an overall filesystem for use by all our code while also
+optmizing that code for production.
+*/
 package fs
 
 import (

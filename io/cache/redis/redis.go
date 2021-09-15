@@ -1,4 +1,25 @@
-// Package redis provides an io/fs.FS implementation that can be used in our cache.FS package.
+/*
+Package redis provides an io/fs.FS implementation that can be used in our cache.FS package.
+
+Here's an example that simply accesses a local Redis instance:
+	redisFS, err := redis.New(
+		redis.Args{Addr: "127.0.0.1:6379"},
+		// This causes all files to exire in 5 minutes.
+		// You can write a complex ruleset to handle different files at
+		// different rates.
+		redis.WithWriteFileOFOptions(
+			regexp.MustCompile(`.*`),
+			redis.ExpireFiles(5 * time.Minute),
+		),
+	)
+	if err != nil {
+		// Do something
+	}
+
+	if err := redisFS.WriteFile("gopher.jpg", gopherBytes, 0644); err != nil {
+		// Do something
+	}
+*/
 package redis
 
 import (
@@ -119,11 +140,6 @@ func (f *FS) Open(name string) (fs.File, error) {
 	}, nil
 }
 
-/*
-have OpenFile(string, int, ..."github.com/gopherfs/fs".OFOption) ("io/fs".File, error)
-want OpenFile(string, "io/fs".FileMode, ..."github.com/gopherfs/fs".OFOption) ("io/fs".File, error)
-*/
-
 // OpenFile implements fs.OpenFiler.OpenFile(). We support os.O_CREATE, os.O_EXCL, os.O_RDONLY, os.O_WRONLY,
 // and os.O_TRUNC. If OpenFile is passed O_RDONLY, this calls Open() and ignores all options.
 // When writing a file, the file is not written until Close() is called on the file.
@@ -220,9 +236,8 @@ func (f *FS) Stat(name string) (fs.FileInfo, error) {
 	return rf.fi, nil
 }
 
-// WriteFile writes a file to name with content. This uses O_WRONLY | O_CREATE | O_TRUNC, so
-// it will overrite an existing entry. If you passed WithWriteFileOFOptions(), it will
-// use those options if name matches a regex. Passed perm must be 0644.
+// WriteFile writes a file to name with content. This will overrite an existing entry. 
+// Passed perm must be 0644.
 func (f *FS) WriteFile(name string, content []byte, perm fs.FileMode) error {
 	var opts []jsfs.OFOption
 

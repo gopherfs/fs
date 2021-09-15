@@ -15,7 +15,8 @@ type mergeOptions struct {
 type MergeOption func(o *mergeOptions)
 
 // FileTransform gives the base name of a file and the content of the file. It returns
-// the content that MAY be transformed in some way.
+// the content that MAY be transformed in some way. If this return a nil for []byte and
+// a nil error, this file is skipped.
 type FileTransform func(name string, content []byte) ([]byte, error)
 
 // WithTransform instructs the Merge() to use a FileTransform on the files it reads before
@@ -65,6 +66,9 @@ func Merge(into Writer, from fs.FS, prepend string, options ...MergeOption) erro
 			b, err = opt.fileTransform(path.Base(p), b)
 			if err != nil {
 				return err
+			}
+			if b == nil {
+				return nil
 			}
 		}
 
