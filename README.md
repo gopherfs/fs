@@ -1,6 +1,6 @@
 ![gopherfs logo-sm](https://raw.githubusercontent.com/gopherfs/fs/main/cover.png)
 
-A set of io/fs filesystem abstractions for Go
+A set of io/fs filesystem abstractions and utilities for Go
 
 [![GoDoc](https://godoc.org/github.com/gopherfs/fs?status.svg)](https://godoc.org/github.com/gopherfs/fs) 
 
@@ -63,9 +63,12 @@ The most complete examples will be in the GoDoc for individual packages. But her
 
 ### Optimize embed.FS when not in debug mode
 
+![Choices](https://media.giphy.com/media/3og0Iwmv38WmJBrYvS/giphy.gif?cid=790b7611a0bd571b48291d830cf91d39f94f0083c2a7040a&rid=giphy.gif&ct=g)
+
 embed.FS is great. But what if you want to have readable JS for debug and compact code when in production?  What if you'd also like to take several embed.FS and merge into a single tree?
 
 `Merge()` and our simple memory storage to the rescue:
+
 ```go
 optimized := simple.New(simple.WithPearson())
 
@@ -97,10 +100,14 @@ optimized.RO() // Locks this filesystem for readonly
 
 ### Access Redis as a filesystem
 
+![Just Cause](https://media.giphy.com/media/5xaOcLGm3mKRQuDYCgU/giphy.gif?cid=ecf05e47jk4t434yvdq6szu7f6c8dte8jty31o7ozd4y8awx&rid=giphy.gif&ct=g)
+
+
 One of the more popular caching systems around is Redis. Redis of course has a lot of options around it, but most use cases are simply as a filesystem. If this is your use, you can gain
 access to Redis using our `fs/io/cache/redis` implementation.
 
 Here we simply create a connection to our local Redis cache, set a 5 minute expiration time on all files and then write a file.
+
 ```go
 redisFS, err := redis.New(
 	redis.Args{Addr: "127.0.0.1:6379"},
@@ -122,6 +129,8 @@ if err := redisFS.WriteFile("gopher.jpg", gopherBytes, 0644); err != nil {
 ```
 
 ### Build a Cascading Cache
+
+![Need for speed](https://c.tenor.com/KgS_y6_wgF0AAAAd/road-runner-run.gif)
 
 Here we are going to build a cascading cache system. The goal is to have multiple layers of cache to look at before finally going to the source. This code will:
 
@@ -183,11 +192,32 @@ if err != nil {
 }
 ```
 
-### Alternatives
+## Contributions
 
-This package is fairly new (2021) and I should point out that there is already a great package for filesystem abstractions [Afero](https://github.com/spf13/afero).  While I've never used it, spf13 is the author of several great packages and it looks like it has great support for several different filesystem types.
+This project is open to contributions.  The best way to contribute:
 
-So why gopherfs?  When I started writing this I was simply interested in trying to take advantage of io/fs.  I saw Afero after I had written a couple of filesystems and it did not have io/fs support. 
+1. Open a feature/bug request for the feature
+2. After a brief discusssion, fork the repo
+3. Commit your changes
+4. Create a Pull Request
+
+\#1 and \#2 simple prevents any time wasted by for things that might not be within the scope for this project or to make sure a bug solution is the right solution.
+
+We are looking for contributors to:
+
+- Support Azure Append and Page Blobs (we already support block blobs)
+- Support GCP Blob storage
+- Support GCP Filestore
+- Support AWS S3
+- Support AWS Elastic storage
+- Support SFTP
+
+
+## Alternatives
+
+I should point out that there is already a great package for filesystem abstractions [Afero](https://github.com/spf13/afero).  While I've never used it, spf13 is the author of several great packages and it looks like it has great support for several different filesystem types.
+
+**So why gopherfs?**  When I started writing this I was simply interested in trying to take advantage of io/fs.  I saw Afero after I had written a couple of filesystems and it did not have io/fs support. 
 
 Afero was also geared towards its own method of abstraction that was built long before io/fs was a twinkle in the Go authors' eyes. 
 
