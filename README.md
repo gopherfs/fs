@@ -3,7 +3,6 @@
 A set of io/fs filesystem abstractions for Go
 
 [![GoDoc](https://godoc.org/github.com/gopherfs/fs?status.svg)](https://godoc.org/github.com/gopherfs/fs) 
-<iframe src="https://ghbtns.com/github-btn.html?user=gopherfs&repo=fs&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
 
 # Overview
 
