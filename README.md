@@ -4,6 +4,8 @@ A set of io/fs filesystem abstractions for Go
 
 [![GoDoc](https://godoc.org/github.com/gopherfs/fs?status.svg)](https://godoc.org/github.com/gopherfs/fs) 
 
+Please :star: above
+
 # Overview
 
 This package provides io/fs interfaces for:
