@@ -72,7 +72,15 @@ func Merge(into Writer, from fs.FS, prepend string, options ...MergeOption) erro
 			}
 		}
 
-		return into.WriteFile(path.Join(prepend, p), b, d.Type())
+		intoPath := path.Join(prepend, p)
+		if i, ok := into.(MkdirAllFS); ok {
+			parentDir := path.Dir(intoPath)
+			if err := i.MkdirAll(parentDir, 0700+fs.ModeDir); err != nil {
+				return fmt.Errorf("unable to create Dir(%s): %w", parentDir, err)
+			}
+		}
+
+		return into.WriteFile(intoPath, b, d.Type())
 	}
 
 	return fs.WalkDir(from, ".", fn)

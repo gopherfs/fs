@@ -16,7 +16,7 @@ import (
 )
 
 //go:embed simple.go pearson.go
-var FS embed.FS
+var FSM embed.FS
 
 func mustRead(fsys fs.FS, name string) []byte {
 	b, err := fs.ReadFile(fsys, name)
@@ -28,7 +28,7 @@ func mustRead(fsys fs.FS, name string) []byte {
 
 func md5Sum(b []byte) string {
 	h := md5.New()
-	h.Write(mustRead(FS, "simple.go"))
+	h.Write(mustRead(FSM, "simple.go"))
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
@@ -36,7 +36,7 @@ func TestMerge(t *testing.T) {
 	mem := New(WithPearson())
 	mem.WriteFile("/where/the/streets/have/no/name/u2.txt", []byte("joshua tree"), 0660)
 
-	if err := jsfs.Merge(mem, FS, "/songs/"); err != nil {
+	if err := jsfs.Merge(mem, FSM, "/songs/"); err != nil {
 		panic(err)
 	}
 	mem.RO()
@@ -80,11 +80,11 @@ func TestMerge(t *testing.T) {
 		t.Fatalf("TestMerge(simple.ReadFile): -want/+got:\n%s", pretty.Compare("joshua tree", string(b)))
 	}
 
-	if md5Sum(mustRead(mem, "songs/simple.go")) != md5Sum(mustRead(FS, "simple.go")) {
-		t.Fatalf("TestMerge(md5 check on simple.go): got %q, want %q", md5Sum(mustRead(mem, "songs/simple.go")), md5Sum(mustRead(FS, "simple.go")))
+	if md5Sum(mustRead(mem, "songs/simple.go")) != md5Sum(mustRead(FSM, "simple.go")) {
+		t.Fatalf("TestMerge(md5 check on simple.go): got %q, want %q", md5Sum(mustRead(mem, "songs/simple.go")), md5Sum(mustRead(FSM, "simple.go")))
 	}
-	if md5Sum(mustRead(mem, "songs/pearson.go")) != md5Sum(mustRead(FS, "pearson.go")) {
-		t.Fatalf("TestMerge(md5 check on pearson.go): got %q, want %q", md5Sum(mustRead(mem, "songs/pearson.go")), md5Sum(mustRead(FS, "pearson.go")))
+	if md5Sum(mustRead(mem, "songs/pearson.go")) != md5Sum(mustRead(FSM, "pearson.go")) {
+		t.Fatalf("TestMerge(md5 check on pearson.go): got %q, want %q", md5Sum(mustRead(mem, "songs/pearson.go")), md5Sum(mustRead(FSM, "pearson.go")))
 	}
 }
 
@@ -103,7 +103,7 @@ func TestTransform(t *testing.T) {
 	}
 
 	mem := New()
-	if err := jsfs.Merge(mem, FS, "", jsfs.WithTransform(transformer)); err != nil {
+	if err := jsfs.Merge(mem, FSM, "", jsfs.WithTransform(transformer)); err != nil {
 		panic(err)
 	}
 	mem.RO()
@@ -123,7 +123,7 @@ func TestTransform(t *testing.T) {
 	if err := zr.Close(); err != nil {
 		t.Fatalf("TestTranform: unexpected problem during gzip close: %s", err)
 	}
-	want, err := FS.ReadFile("simple.go")
+	want, err := FSM.ReadFile("simple.go")
 	if err != nil {
 		panic("simple.go not in embedded file system")
 	}
@@ -134,7 +134,7 @@ func TestTransform(t *testing.T) {
 }
 
 func TestStat(t *testing.T) {
-	systems := []*MemFS{}
+	systems := []*FS{}
 
 	mem := New()
 	mem.WriteFile("/some/dir/file.txt", []byte("joshua tree"), 0660)

@@ -1,19 +1,18 @@
 package cache
 
 import (
+	"bytes"
+	"os"
+	"path/filepath"
 	"regexp"
 	"testing"
-	"path/filepath"
-	"os"
 	"time"
-	"bytes"
 
-	osfs "github.com/gopherfs/fs/io/os"
+	"github.com/google/uuid"
 	"github.com/gopherfs/fs/io/cache"
 	"github.com/gopherfs/fs/io/cache/disk"
 	"github.com/gopherfs/fs/io/cache/redis"
-	"github.com/google/uuid"
-
+	osfs "github.com/gopherfs/fs/io/os"
 )
 
 func TestETOE(t *testing.T) {
@@ -27,7 +26,7 @@ func TestETOE(t *testing.T) {
 		panic(err)
 	}
 	if err := permStore.Mkdir(permLoc, 0744); err != nil {
-		panic(err)	
+		panic(err)
 	}
 	defer os.RemoveAll(permLoc)
 
@@ -37,7 +36,6 @@ func TestETOE(t *testing.T) {
 	}
 	permStore = sub.(*osfs.FS)
 
-	
 	if err := permStore.Mkdir("dir", 0744); err != nil {
 		panic(err)
 	}
@@ -49,7 +47,7 @@ func TestETOE(t *testing.T) {
 	// Create our disk cache, which stores temporary disk cached files.
 	// In real life, our permStore would be off system, but for testing we
 	// have two disk layers.
-	diskFS, err := disk.New("", disk.WithExpireCheck(5 * time.Second), disk.WithExpireFiles(10 * time.Second))
+	diskFS, err := disk.New("", disk.WithExpireCheck(5*time.Second), disk.WithExpireFiles(10*time.Second))
 	if err != nil {
 		panic(err)
 	}
@@ -67,7 +65,7 @@ func TestETOE(t *testing.T) {
 		redis.Args{Addr: "127.0.0.1:6379"},
 		redis.WithWriteFileOFOptions(
 			regexp.MustCompile(`.*`),
-			redis.ExpireFiles(2 * time.Second),
+			redis.ExpireFiles(2*time.Second),
 		),
 	)
 	if err != nil {
@@ -97,7 +95,7 @@ func TestETOE(t *testing.T) {
 
 	// Allow disk writes to occur so we don't get a weird error like:
 	// "invalid argument" because our cleanup runs when the fill goroutine hasn't occurred.
-	time.Sleep(2 * time.Second) 
+	time.Sleep(2 * time.Second)
 }
 
 func fetch(desc string, c *cache.FS, expectContent []byte, expectFill string, t *testing.T) {

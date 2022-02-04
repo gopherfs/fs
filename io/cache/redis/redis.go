@@ -73,7 +73,7 @@ func WithWriteFileOFOptions(regex *regexp.Regexp, options ...jsfs.OFOption) Opti
 }
 
 type ofOptions struct {
-	flags int
+	flags       int
 	expireFiles time.Duration
 }
 
@@ -96,18 +96,18 @@ func ExpireFiles(d time.Duration) jsfs.OFOption {
 
 // Flags allows the passing of os.O_RDONLY/os.O_WRONLY/O_EXCL/O_TRUNC/O_CREATE flags to OpenFile().
 // By default this is O_RDONLY.
-func Flags(flags int) jsfs.OFOption{
+func Flags(flags int) jsfs.OFOption {
 	return func(o interface{}) error {
 		opts, ok := o.(*ofOptions)
-                if !ok {
-                        return fmt.Errorf("bug: redis.ofOptions was not passed(%T)", o)
-                }
+		if !ok {
+			return fmt.Errorf("bug: redis.ofOptions was not passed(%T)", o)
+		}
 		opts.flags = flags
 		return nil
 	}
 }
 
-// New is the constructor for Redis.
+// New is the constructor for FS that implements fs.OpenFile and io.FS using Redis.
 func New(args Args, options ...Option) (*FS, error) {
 	c := redis.NewClient(&args)
 
@@ -236,7 +236,7 @@ func (f *FS) Stat(name string) (fs.FileInfo, error) {
 	return rf.fi, nil
 }
 
-// WriteFile writes a file to name with content. This will overrite an existing entry. 
+// WriteFile writes a file to name with content. This will overrite an existing entry.
 // Passed perm must be 0644.
 func (f *FS) WriteFile(name string, content []byte, perm fs.FileMode) error {
 	var opts []jsfs.OFOption

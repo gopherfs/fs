@@ -75,10 +75,10 @@ Get a file from our cache:
 package cache
 
 import (
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
-	"fmt"
 	"strings"
 
 	jsfs "github.com/gopherfs/fs"
@@ -87,7 +87,7 @@ import (
 // Simply here to make sure our FS implements CacheFS.
 var _ CacheFS = &FS{}
 
-var inTest bool 
+var inTest bool
 
 func init() {
 	if strings.HasSuffix(os.Args[0], ".test") {
@@ -161,7 +161,7 @@ func (f *FS) OpenFile(name string, perms fs.FileMode, options ...jsfs.OFOption) 
 func (f *FS) ReadFile(name string) ([]byte, error) {
 	b, err := f.cache.ReadFile(name)
 	if err == nil {
-		f.recordFill(f.cache) 
+		f.recordFill(f.cache)
 		return b, nil
 	}
 
@@ -169,7 +169,7 @@ func (f *FS) ReadFile(name string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	f.recordFill(f.store) 
+	f.recordFill(f.store)
 
 	go func() {
 		if err := f.cache.WriteFile(name, b, 0644); err != nil {

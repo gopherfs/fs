@@ -4,8 +4,8 @@ used for a disk cache that expires files.
 
 Example use:
 	diskFS, err := disk.New(
-		"", 
-		disk.WithExpireCheck(5 * time.Second), 
+		"",
+		disk.WithExpireCheck(5 * time.Second),
 		disk.WithExpireFiles(10 * time.Second),
 	)
 	if err != nil {
@@ -74,7 +74,7 @@ func WithExpireFiles(d time.Duration) Option {
 // WithLogger allows setting a customer Logger. Defaults to using the
 // stdlib logger.
 func WithLogger(l jsfs.Logger) Option {
-	return func (f *FS) error {
+	return func(f *FS) error {
 		f.logger = l
 		return nil
 	}
@@ -119,7 +119,7 @@ func New(location string, options ...Option) (*FS, error) {
 	}
 
 	sys := &FS{
-		logger: jsfs.DefaultLogger{},
+		logger:         jsfs.DefaultLogger{},
 		location:       location,
 		expireDuration: 30 * time.Minute,
 		openTimeout:    3 * time.Second,
@@ -191,7 +191,7 @@ func WithFlags(flags int) jsfs.OFOption {
 	}
 }
 
-// OpenFile implements fs.OpenFiler.OpenFile(). 
+// OpenFile implements fs.OpenFiler.OpenFile().
 func (f *FS) OpenFile(name string, perms fs.FileMode, options ...jsfs.OFOption) (fs.File, error) {
 	opts := ofOptions{}
 	opts.defaults()
@@ -253,5 +253,5 @@ func (f *FS) diskFilePath(name string) string {
 }
 
 func nameTransform(name string) string {
-	return  strings.Replace(name, "/", "_slash_", -1)
+	return strings.Replace(name, "/", "_slash_", -1)
 }
