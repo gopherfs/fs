@@ -46,7 +46,7 @@ type Args = redis.Options
 
 // FS provides an io.FS implementation using Redis.
 type FS struct {
-	client      *redis.Client
+	client      redis.Cmdable
 	openTimeout time.Duration
 
 	writeFileOFOptions []writeFileOptions
@@ -79,6 +79,8 @@ type ofOptions struct {
 
 func (o *ofOptions) defaults() {
 	o.flags = os.O_RDONLY
+	// NOTE, this setting only works with redis server version >= 6.0
+	// see https://pkg.go.dev/github.com/go-redis/redis/v8#Client.SetNX
 	o.expireFiles = redis.KeepTTL
 }
 
@@ -107,7 +109,7 @@ func Flags(flags int) jsfs.OFOption {
 	}
 }
 
-// New is the constructor for FS that implements fs.OpenFile and io.FS using Redis.
+// New is the constructor for Redis.
 func New(args Args, options ...Option) (*FS, error) {
 	c := redis.NewClient(&args)
 
@@ -307,7 +309,7 @@ type writefile struct {
 	sync.Mutex
 	closed bool
 
-	client *redis.Client
+	client redis.Cmdable
 }
 
 func (f *writefile) Stat() (fs.FileInfo, error) {

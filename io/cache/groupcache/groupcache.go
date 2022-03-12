@@ -27,7 +27,6 @@ import (
 
 var _ cache.CacheFS = &FS{}
 
-// FS represents a fs.FS that implements OpenFile() and allows reading and writing to a groupcache.
 type FS struct {
 	picker groupcache.PeerPicker
 	mu     sync.Mutex
@@ -38,7 +37,6 @@ type FS struct {
 	filler cache.CacheFS
 }
 
-// New creates a new FS.
 func New(picker groupcache.PeerPicker) (*FS, error) {
 	f := &FS{
 		picker:      picker,

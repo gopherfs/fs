@@ -51,9 +51,9 @@ type fileInfo struct {
 // FS implemements fs.ReadDirFS/StatFS/ReadFileFS/GlobFS using functions defined
 // in the "os" and "filepath" packages. In addition we support
 // github.com/johnsiilver/fs/OpenFiler to allow for writing files.
-type FS struct {
+type FS struct{
 	rootedAt string
-	logger   jsfs.Logger
+	logger jsfs.Logger
 }
 
 // Option is an optional argumetn for FS.
@@ -172,7 +172,7 @@ func (f *FS) Sub(dir string) (fs.FS, error) {
 // Mkdir implements os.Mkdir().
 func (f *FS) Mkdir(path string, perm fs.FileMode) error {
 	return os.Mkdir(filepath.Join(f.rootedAt, path), perm)
-}
+} 
 
 // MkdirAll implements os.MkdirAll().
 func (f *FS) MkdirAll(path string, perm fs.FileMode) error {
