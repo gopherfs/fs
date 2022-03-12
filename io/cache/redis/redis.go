@@ -73,12 +73,14 @@ func WithWriteFileOFOptions(regex *regexp.Regexp, options ...jsfs.OFOption) Opti
 }
 
 type ofOptions struct {
-	flags int
+	flags       int
 	expireFiles time.Duration
 }
 
 func (o *ofOptions) defaults() {
 	o.flags = os.O_RDONLY
+	// NOTE, this setting only works with redis server version >= 6.0
+	// see https://pkg.go.dev/github.com/go-redis/redis/v8#Client.SetNX
 	o.expireFiles = redis.KeepTTL
 }
 
@@ -96,12 +98,12 @@ func ExpireFiles(d time.Duration) jsfs.OFOption {
 
 // Flags allows the passing of os.O_RDONLY/os.O_WRONLY/O_EXCL/O_TRUNC/O_CREATE flags to OpenFile().
 // By default this is O_RDONLY.
-func Flags(flags int) jsfs.OFOption{
+func Flags(flags int) jsfs.OFOption {
 	return func(o interface{}) error {
 		opts, ok := o.(*ofOptions)
-                if !ok {
-                        return fmt.Errorf("bug: redis.ofOptions was not passed(%T)", o)
-                }
+		if !ok {
+			return fmt.Errorf("bug: redis.ofOptions was not passed(%T)", o)
+		}
 		opts.flags = flags
 		return nil
 	}
@@ -236,7 +238,7 @@ func (f *FS) Stat(name string) (fs.FileInfo, error) {
 	return rf.fi, nil
 }
 
-// WriteFile writes a file to name with content. This will overrite an existing entry. 
+// WriteFile writes a file to name with content. This will overrite an existing entry.
 // Passed perm must be 0644.
 func (f *FS) WriteFile(name string, content []byte, perm fs.FileMode) error {
 	var opts []jsfs.OFOption
