@@ -46,7 +46,7 @@ type Args = redis.Options
 
 // FS provides an io.FS implementation using Redis.
 type FS struct {
-	client      *redis.Client
+	client      redis.Cmdable
 	openTimeout time.Duration
 
 	writeFileOFOptions []writeFileOptions
@@ -309,7 +309,7 @@ type writefile struct {
 	sync.Mutex
 	closed bool
 
-	client *redis.Client
+	client redis.Cmdable
 }
 
 func (f *writefile) Stat() (fs.FileInfo, error) {
