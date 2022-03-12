@@ -76,6 +76,14 @@ func WithRedisCluster(args ClusterArgs) Option {
 	}
 }
 
+// WithExistingClient uses an existing Redis connection pool as the backend.
+func WithExistingClient(c redis.Cmdable) Option {
+	return func(f *FS) error {
+		f.client = c
+		return nil
+	}
+}
+
 type writeFileOptions struct {
 	regex   *regexp.Regexp
 	options []jsfs.OFOption
