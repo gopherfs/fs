@@ -1,4 +1,4 @@
-/*
+/* 
 Package fs contains abstractions not provided by io/fs needed to provide services such
 as writing files and utility functions that can be useful.
 
@@ -16,8 +16,8 @@ Using Merge to optimize embed.FS Javascript into a subdirectory "js":
 	optimized := simple.New(simple.WithPearson())
 
 	err := Merge(
-		optimized,
-		somePkg.Embeded,
+		optimized, 
+		somePkg.Embeded, 
 		"/js/",
 		WithTransform(
 			func(name string, content []byte) ([]byte, error){
@@ -76,15 +76,4 @@ type Writer interface {
 	// return fs.ErrExist if the file already exists. The FileMode
 	// may or may not be honored by the implementation.
 	WriteFile(name string, data []byte, perm fs.FileMode) error
-}
-
-// MkdirAllFS provides a filesystem that impelments MkdirAll(). An FS not implementing this is
-// expected to create the directory structure on a file write.
-type MkdirAllFS interface {
-	OpenFiler
-
-	// MkdirAll creates a directory named path, along with any necessary parents, and returns nil, or else returns an error.
-	// The permission bits perm (before umask) are used for all directories that MkdirAll creates.
-	// If path is already a directory, MkdirAll does nothing and returns nil.
-	MkdirAll(path string, perm fs.FileMode) error
 }

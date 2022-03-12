@@ -14,13 +14,13 @@ import (
 	jsfs "github.com/gopherfs/fs"
 )
 
-// FS provides a simple memory structure that implements io/fs.FS and fs.Writer(above).
+// MemFS provides a simple memory structure that implements io/fs.FS and fs.Writer(above).
 // This is great for aggregating several different embeded fs.FS into a single structure using
 // Merge() below. It uses "/" unix separators and doesn't deal with any funky "\/" things.
 // If you want to use this don't start trying to get complicated with your pathing.
 // This structure is safe for concurrent reading or concurrent writing, but not concurrent
 // read/write. Once finished writing files, you should call .RO() to lock it.
-type FS struct {
+type MemFS struct {
 	root *file
 
 	writeMu sync.Mutex
@@ -32,24 +32,24 @@ type FS struct {
 }
 
 // SimpleOption provides an optional argument to NewSimple().
-type SimpleOption func(s *FS)
+type SimpleOption func(s *MemFS)
 
 // WithPearson will create a lookup cache using Pearson hashing to make lookups actually happen
 // at O(1) (after the hash calc) instead of walking the file system tree after various strings
 // splits. When using this, realize that you MUST be using ASCII characters.
 func WithPearson() SimpleOption {
-	return func(s *FS) {
+	return func(s *MemFS) {
 		s.pearson = true
 	}
 }
 
 // New is the constructor for Simple.
-func New(options ...SimpleOption) *FS {
-	return &FS{root: &file{name: ".", time: time.Now(), isDir: true}}
+func New(options ...SimpleOption) *MemFS {
+	return &MemFS{root: &file{name: ".", time: time.Now(), isDir: true}}
 }
 
 // Open implements fs.FS.Open().
-func (s *FS) Open(name string) (fs.File, error) {
+func (s *MemFS) Open(name string) (fs.File, error) {
 	if name == "/" || name == "" || name == "." {
 		return s.root, nil
 	}
@@ -79,7 +79,7 @@ func (s *FS) Open(name string) (fs.File, error) {
 	return dir.getCopy(), nil
 }
 
-func (s *FS) ReadDir(name string) ([]fs.DirEntry, error) {
+func (s *MemFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	dir, err := s.findDir(name)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (s *FS) ReadDir(name string) ([]fs.DirEntry, error) {
 	return dir.objects, nil
 }
 
-func (s *FS) findDir(name string) (*file, error) {
+func (s *MemFS) findDir(name string) (*file, error) {
 	switch name {
 	case ".", "", "/":
 		return s.root, nil
@@ -119,7 +119,7 @@ func (s *FS) findDir(name string) (*file, error) {
 // ReadFile implememnts ReadFileFS.ReadFile(). The slice returned by ReadFile is not
 // a copy of the file's contents like Open().File.Read() returns. Modifying it will
 // modifiy the content so BE CAREFUL.
-func (s *FS) ReadFile(name string) ([]byte, error) {
+func (s *MemFS) ReadFile(name string) ([]byte, error) {
 	f, err := s.Open(name)
 	if err != nil {
 		return nil, err
@@ -132,7 +132,7 @@ func (s *FS) ReadFile(name string) ([]byte, error) {
 }
 
 // Stat implements fs.StatFS.Stat().
-func (s *FS) Stat(name string) (fs.FileInfo, error) {
+func (s *MemFS) Stat(name string) (fs.FileInfo, error) {
 	f, err := s.Open(name)
 	if err == nil {
 		return f.Stat()
@@ -168,9 +168,9 @@ func Flags(flags int) jsfs.OFOption {
 
 // OpenFile implements OpenFiler. Supports flags O_RDONLY, O_WRONLY, O_CREATE, O_TRUNC and O_EXCL.
 // The file returned by OpenFile is not thread-safe.
-func (s *FS) OpenFile(name string, perms fs.FileMode, options ...jsfs.OFOption) (fs.File, error) {
+func (s *MemFS) OpenFile(name string, perms fs.FileMode, options ...jsfs.OFOption) (fs.File, error) {
 	if !perms.IsRegular() {
-		return nil, fmt.Errorf("FS does not support non-regular mode bits")
+		return nil, fmt.Errorf("MemFS does not support non-regular mode bits")
 	}
 
 	opts := ofOptions{}
@@ -230,7 +230,7 @@ func isFlagSet(flags int, flag int) bool {
 
 // WriteFile implememnts Writer. The content reference is copied, so modifying the original will
 // modify it here. perm is ignored. WriteFile is not thread-safe.
-func (s *FS) WriteFile(name string, content []byte, perm fs.FileMode) error {
+func (s *MemFS) WriteFile(name string, content []byte, perm fs.FileMode) error {
 	if s.ro {
 		return fmt.Errorf("Simple is locked from writing")
 	}
@@ -279,7 +279,7 @@ func (s *FS) WriteFile(name string, content []byte, perm fs.FileMode) error {
 }
 
 // RO locks the file system from writing.
-func (s *FS) RO() {
+func (s *MemFS) RO() {
 	s.ro = true
 
 	if s.pearson {

@@ -458,9 +458,9 @@ type FS struct {
 	containerURL azblob.ContainerURL
 }
 
-// New is the constructor for FS. It is recommended that you use blob/auth/msi to create
+// NewFS is the constructor for FS. It is recommended that you use blob/auth/msi to create
 // the "cred".
-func New(account, container string, cred azblob.Credential) (*FS, error) {
+func NewFS(account, container string, cred azblob.Credential) (*FS, error) {
 	p := azblob.NewPipeline(cred, azblob.PipelineOptions{})
 	blobPrimaryURL, _ := url.Parse("https://" + account + ".blob.core.windows.net/")
 	bsu := azblob.NewServiceURL(*blobPrimaryURL, p)
@@ -586,8 +586,8 @@ func (f *FS) dirFile(ctx context.Context, name string) (*File, error) {
 }
 
 type rwOptions struct {
-	lock  bool
-	tm    azblob.TransferManager
+	lock bool
+	tm   azblob.TransferManager
 	flags int
 }
 

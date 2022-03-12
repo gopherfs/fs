@@ -15,7 +15,7 @@ import (
 type index struct {
 	sync.Mutex
 
-	logger    jsfs.Logger
+	logger jsfs.Logger
 	location  string
 	olderThan time.Duration
 	expires   *llrb.LLRB
@@ -24,7 +24,7 @@ type index struct {
 
 func newIndex(location string, logger jsfs.Logger, olderThan time.Duration) *index {
 	return &index{
-		logger:    logger,
+		logger: logger,
 		expires:   llrb.New(),
 		location:  location,
 		olderThan: olderThan,
