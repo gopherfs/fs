@@ -44,9 +44,12 @@ var _ cache.CacheFS = &FS{}
 // Args is arguments to the Redis client.
 type Args = redis.Options
 
+// ClusterArgs is arguments to the Redis ClusterClient
+type ClusterArgs = redis.ClusterOptions
+
 // FS provides an io.FS implementation using Redis.
 type FS struct {
-	client      *redis.Client
+	client      redis.Cmdable
 	openTimeout time.Duration
 
 	writeFileOFOptions []writeFileOptions
@@ -54,6 +57,24 @@ type FS struct {
 
 // Option is an optional argument for the New() constructor.
 type Option func(f *FS) error
+
+// WithRedisClient uses a single Redis client as the backend.
+func WithRedisClient(args Args) Option {
+	return func(f *FS) error {
+		c := redis.NewClient(&args)
+		f.client = c
+		return nil
+	}
+}
+
+// WithRedisCluster uses a Redis cluster as the backend.
+func WithRedisCluster(args ClusterArgs) Option {
+	return func(f *FS) error {
+		c := redis.NewClusterClient(&args)
+		f.client = c
+		return nil
+	}
+}
 
 type writeFileOptions struct {
 	regex   *regexp.Regexp
@@ -79,6 +100,8 @@ type ofOptions struct {
 
 func (o *ofOptions) defaults() {
 	o.flags = os.O_RDONLY
+	// NOTE: KEEPTTL will only work with Redis server version >= 6.0, else it will throw a syntax error
+	// see https://pkg.go.dev/github.com/go-redis/redis/v8#Client.Set
 	o.expireFiles = redis.KeepTTL
 }
 
@@ -108,11 +131,9 @@ func Flags(flags int) jsfs.OFOption {
 }
 
 // New is the constructor for FS that implements fs.OpenFile and io.FS using Redis.
-func New(args Args, options ...Option) (*FS, error) {
-	c := redis.NewClient(&args)
+func New(options ...Option) (*FS, error) {
 
 	r := &FS{
-		client:      c,
 		openTimeout: 3 * time.Second,
 	}
 
@@ -307,7 +328,7 @@ type writefile struct {
 	sync.Mutex
 	closed bool
 
-	client *redis.Client
+	client redis.Cmdable
 }
 
 func (f *writefile) Stat() (fs.FileInfo, error) {
