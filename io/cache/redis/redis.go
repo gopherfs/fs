@@ -41,11 +41,10 @@ import (
 
 var _ cache.CacheFS = &FS{}
 
-// Args is arguments to the Redis client.
-type Args = redis.Options
-
-// ClusterArgs is arguments to the Redis ClusterClient
-type ClusterArgs = redis.ClusterOptions
+// Checks for various clients if they implement the Cmdable interface
+var _ redis.Cmdable = &redis.Client{}
+var _ redis.Cmdable = &redis.ClusterClient{}
+var _ redis.Cmdable = &redis.Pipeline{}
 
 // FS provides an io.FS implementation using Redis.
 type FS struct {
@@ -57,32 +56,6 @@ type FS struct {
 
 // Option is an optional argument for the New() constructor.
 type Option func(f *FS) error
-
-// WithRedisClient uses a single Redis client as the backend.
-func WithRedisClient(args Args) Option {
-	return func(f *FS) error {
-		c := redis.NewClient(&args)
-		f.client = c
-		return nil
-	}
-}
-
-// WithRedisCluster uses a Redis cluster as the backend.
-func WithRedisCluster(args ClusterArgs) Option {
-	return func(f *FS) error {
-		c := redis.NewClusterClient(&args)
-		f.client = c
-		return nil
-	}
-}
-
-// WithExistingClient uses an existing Redis connection pool as the backend.
-func WithExistingClient(c redis.Cmdable) Option {
-	return func(f *FS) error {
-		f.client = c
-		return nil
-	}
-}
 
 type writeFileOptions struct {
 	regex   *regexp.Regexp
@@ -139,12 +112,15 @@ func Flags(flags int) jsfs.OFOption {
 }
 
 // New is the constructor for FS that implements fs.OpenFile and io.FS using Redis.
-func New(options ...Option) (*FS, error) {
-
+// The redis.Cmdable interface can accommodate a range of clients, each with separate configuration options, including:
+// redis.Client (connection to a single server). See https://pkg.go.dev/github.com/go-redis/redis/v8#Options for options.
+// redis.ClusterClient (connection to a server cluster). See https://pkg.go.dev/github.com/go-redis/redis/v8#ClusterOptions
+// for options.
+func New(client redis.Cmdable, options ...Option) (*FS, error) {
 	r := &FS{
 		openTimeout: 3 * time.Second,
+		client:      client,
 	}
-
 	for _, o := range options {
 		if err := o(r); err != nil {
 			return nil, err
