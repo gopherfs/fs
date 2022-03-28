@@ -41,12 +41,14 @@ import (
 
 var _ cache.CacheFS = &FS{}
 
-// Args is arguments to the Redis client.
-type Args = redis.Options
+// Checks for various clients if they implement the Cmdable interface
+var _ redis.Cmdable = &redis.Client{}
+var _ redis.Cmdable = &redis.ClusterClient{}
+var _ redis.Cmdable = &redis.Pipeline{}
 
 // FS provides an io.FS implementation using Redis.
 type FS struct {
-	client      *redis.Client
+	client      redis.Cmdable
 	openTimeout time.Duration
 
 	writeFileOFOptions []writeFileOptions
@@ -79,6 +81,8 @@ type ofOptions struct {
 
 func (o *ofOptions) defaults() {
 	o.flags = os.O_RDONLY
+	// NOTE: KEEPTTL will only work with Redis server version >= 6.0, else it will throw a syntax error
+	// see https://pkg.go.dev/github.com/go-redis/redis/v8#Client.Set
 	o.expireFiles = redis.KeepTTL
 }
 
@@ -108,14 +112,15 @@ func Flags(flags int) jsfs.OFOption {
 }
 
 // New is the constructor for FS that implements fs.OpenFile and io.FS using Redis.
-func New(args Args, options ...Option) (*FS, error) {
-	c := redis.NewClient(&args)
-
+// The redis.Cmdable interface can accommodate a range of clients, each with separate configuration options, including:
+// redis.Client (connection to a single server). See https://pkg.go.dev/github.com/go-redis/redis/v8#Options for options.
+// redis.ClusterClient (connection to a server cluster). See https://pkg.go.dev/github.com/go-redis/redis/v8#ClusterOptions
+// for options.
+func New(client redis.Cmdable, options ...Option) (*FS, error) {
 	r := &FS{
-		client:      c,
 		openTimeout: 3 * time.Second,
+		client:      client,
 	}
-
 	for _, o := range options {
 		if err := o(r); err != nil {
 			return nil, err
@@ -307,7 +312,7 @@ type writefile struct {
 	sync.Mutex
 	closed bool
 
-	client *redis.Client
+	client redis.Cmdable
 }
 
 func (f *writefile) Stat() (fs.FileInfo, error) {
