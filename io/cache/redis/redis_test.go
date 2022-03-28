@@ -3,6 +3,7 @@ package redis
 import (
 	"testing"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/kylelemons/godebug/pretty"
 )
 
@@ -10,11 +11,11 @@ func TestRedis(t *testing.T) {
 	const testFile = "path/to/test/file"
 	const testContent = "content"
 
-	args := Args{
+	args := &redis.Options{
 		Addr: "127.0.0.1:6379",
 	}
 
-	redisFS, err := New(args)
+	redisFS, err := New(redis.NewClient(args))
 	if err != nil {
 		panic(err)
 	}
