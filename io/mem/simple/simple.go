@@ -302,6 +302,76 @@ func (s *FS) RO() {
 	}
 }
 
+// Remove removes the named file or (empty) directory. If there is an error, it will be of type *PathError.
+func (s *FS) Remove(name string) error {
+	return s.remove(name, false)
+}
+
+// RemoveAll removes path and any children it contains. It removes
+// everything it can but returns the first error it encounters.
+// If the path does not exist, RemoveAll returns nil (no error).
+// If there is an error, it will be of type *fs.PathError.
+func (s *FS) RemoveAll(path string) error {
+	return s.remove(path, true)
+}
+
+func (s *FS) remove(name string, removeAll bool) error {
+	if name == "/" || name == "" || name == "." {
+		return fmt.Errorf("cannot Remove() the root directory")
+	}
+
+	name = strings.TrimPrefix(name, ".")
+	name = strings.TrimPrefix(name, "/")
+
+	sp := strings.Split(name, "/")
+
+	if s.pearson && s.ro {
+		return &fs.PathError{
+			Op:   "Remove",
+			Path: name,
+			Err:  fmt.Errorf("read only filesystem set"),
+		}
+	}
+
+	parent := s.root
+	var f *file
+	for i, p := range sp {
+		var err error
+		f, err = parent.Search(p)
+		if err != nil {
+			return &fs.PathError{Op: "Remove", Path: name, Err: err}
+		}
+
+		// We are the last element.
+		if i+1 == len(sp) {
+			if removeAll {
+				if !f.isDir {
+					return &fs.PathError{Op: "Remove", Path: name, Err: fs.ErrInvalid}
+				}
+			} else {
+				// Make sure what we are removing is a file.
+				if f.isDir {
+					return &fs.PathError{Op: "Remove", Path: name, Err: fs.ErrInvalid}
+				}
+			}
+			if err := parent.remove(p, removeAll); err != nil {
+				return &fs.PathError{Op: "Remove", Path: name, Err: err}
+			}
+		}
+
+		// Only the last entry can be a file.
+		if !f.isDir {
+			return &fs.PathError{Op: "Remove", Path: name, Err: fs.ErrInvalid}
+		}
+
+		parent = f
+	}
+	if err := parent.remove(name, removeAll); err != nil {
+		return &fs.PathError{Op: "Remove", Path: name, Err: err}
+	}
+	return nil
+}
+
 // WRFile provides an io.WriteCloser implementation.
 type WRFile struct {
 	content []byte
@@ -366,6 +436,60 @@ func (f *file) addFile(nf *file) {
 			return f.objects[i].Name() < f.objects[j].Name()
 		},
 	)
+}
+
+// remove removes the path from the file if file.isDir == true.
+// If removeAll is set, the name must be a *file with .isDir == true
+// and will remove it and all contained files.
+func (f *file) remove(name string, removeAll bool) error {
+	if len(f.objects) == 0 {
+		return fs.ErrNotExist
+	}
+
+	if !f.isDir {
+		return fmt.Errorf("not a directory")
+	}
+
+	x := sort.Search(
+		len(f.objects),
+		func(i int) bool {
+			return f.objects[i].(*file).name >= name
+		},
+	)
+	var found *file
+
+	if x < len(f.objects) && f.objects[x].(*file).name == name {
+		found = f.objects[x].(*file)
+	}
+	if found == nil {
+		return fs.ErrNotExist
+	}
+
+	if removeAll {
+		if !found.isDir {
+			return fmt.Errorf("not a directory")
+		}
+	} else {
+		if found.isDir {
+			// Remove() can get rid of empty directories.
+			if len(found.objects) > 0 {
+				return fmt.Errorf("directory was not empty")
+			}
+		}
+	}
+
+	n := make([]fs.DirEntry, 0, len(f.objects)-1)
+	switch x {
+	case 0:
+		n = append(n, f.objects[1:]...)
+	case len(f.objects) - 1:
+		n = f.objects[0 : len(f.objects)-1]
+	default:
+		n = append(n, f.objects[0:x]...)
+		n = append(n, f.objects[x+1:]...)
+	}
+	f.objects = n
+	return nil
 }
 
 // Search searches for the sub file named "name". This only works if isDir is true.

@@ -3,6 +3,7 @@ Package disk provides an FS that wraps the johnsiilver/fs/os package to be
 used for a disk cache that expires files.
 
 Example use:
+
 	diskFS, err := disk.New(
 		"",
 		disk.WithExpireCheck(5 * time.Second),

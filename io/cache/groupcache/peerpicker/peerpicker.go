@@ -4,6 +4,7 @@ mechanism and sets up the groupcache to use the HTTPPool for communication betwe
 nodes.
 
 Example:
+
 	picker, err := peerpicker.New(7586)
 	if err != nil {
 		// Do something

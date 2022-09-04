@@ -48,9 +48,19 @@ type fileInfo struct {
 	fs.FileInfo
 }
 
-// FS implemements fs.ReadDirFS/StatFS/ReadFileFS/GlobFS using functions defined
-// in the "os" and "filepath" packages. In addition we support
-// github.com/johnsiilver/fs/OpenFiler to allow for writing files.
+// FS is a filesystem tied to the os filesystem implementing:
+//   - fs.ReadDirFS
+//   - fs.StatFS
+//   - fs.ReadFileFS
+//   - fs.GlobFS
+//
+// using functions defined in the "os" and "filepath" packages. In addition
+// this supports:
+//   - gfs.Writer
+//   - gfs.MkdirAllFS
+//   - gfs.Remove
+//
+// Where "gfs" is github.com/gopherfs/fs .
 type FS struct {
 	rootedAt string
 	logger   jsfs.Logger
@@ -177,4 +187,14 @@ func (f *FS) Mkdir(path string, perm fs.FileMode) error {
 // MkdirAll implements os.MkdirAll().
 func (f *FS) MkdirAll(path string, perm fs.FileMode) error {
 	return os.MkdirAll(filepath.Join(f.rootedAt, path), perm)
+}
+
+// Remove implements os.Remove().
+func (f *FS) Remove(name string) error {
+	return os.Remove(filepath.Join(f.rootedAt, name))
+}
+
+// RemoveAll implements os.RemoveAll().
+func (f *FS) RemoveAll(path string) error {
+	return os.RemoveAll(filepath.Join(f.rootedAt, path))
 }

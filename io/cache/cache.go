@@ -11,6 +11,7 @@ cache that pulls from a disk cache which pulls from Redis which pulls from Azure
 Blob Storage in a waterfall like system.
 
 Create our FS that uses long term storage (Azure Blob Storage):
+
 	cred, err := msi.Token(msi.AppID{ID: "your app ID"})
 	if err != nil {
 		panic(err)
@@ -22,45 +23,52 @@ Create our FS that uses long term storage (Azure Blob Storage):
 	}
 
 Create a Redis CacheFS:
-	redisFS := redis.New(
-		redis.Args{
-			Addr:     "localhost:6379",
-        		Password: "", // no password set
-        		DB:       0,  // use default DB
-		},
-	)
+
+		redisFS := redis.New(
+			redis.Args{
+				Addr:     "localhost:6379",
+	        		Password: "", // no password set
+	        		DB:       0,  // use default DB
+			},
+		)
 
 Setup our first cache layer which tries redis and then fills from a blob:
+
 	networkCache, err := cache.New(redisFS, cloudStore)
 	if err != nil {
 		// Do something
 	}
 
 Setup our local disk FS:
+
 	diskFS, err := disk.New("")
 	if err != nil {
 		// Do something
 	}
 
 Create our second cache layer, pulls from disk first, then redis, then blob:
+
 	diskCache, err := cache.New(diskFS, networkCache)
 	if err != nil {
 		// Do something
 	}
 
 Create our memory cache;
+
 	memCache, err := memfs.New()
 	if err != nil {
 		// Do something
 	}
 
 Create our final cache, pulls from memory, then disk, then redis, then blob:
+
 	cacheSys, err := cache.New(memCache, diskCache)
 	if err != nil {
 		// Do something
 	}
 
 Get a file from our cache:
+
 	// This first attempts to read this from memory. If it doesn't exist, it
 	// attempts to grab from our disk. If it doesn't exist, it tries to
 	// read from Redis. If it doesn't exist, it reads it from Azure blob storage.

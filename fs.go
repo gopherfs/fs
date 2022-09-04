@@ -13,6 +13,7 @@ This package also introduces a Merge() function to allow merging of filesystem c
 another filesystem and the ability to tranform the content in some way (like optimizations).
 
 Using Merge to optimize embed.FS Javascript into a subdirectory "js":
+
 	optimized := simple.New(simple.WithPearson())
 
 	err := Merge(
@@ -87,4 +88,15 @@ type MkdirAllFS interface {
 	// The permission bits perm (before umask) are used for all directories that MkdirAll creates.
 	// If path is already a directory, MkdirAll does nothing and returns nil.
 	MkdirAll(path string, perm fs.FileMode) error
+}
+
+// Remove provides a filesystem that implements Remove() and RemoveAll().
+type Remove interface {
+	// Remove removes the named file or (empty) directory. If there is an error, it will be of type *PathError.
+	Remove(name string) error
+	// RemoveAll removes path and any children it contains. It removes
+	// everything it can but returns the first error it encounters.
+	// If the path does not exist, RemoveAll returns nil (no error).
+	// If there is an error, it will be of type *fs.PathError.
+	RemoveAll(path string) error
 }

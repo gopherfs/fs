@@ -2,6 +2,7 @@
 Package redis provides an io/fs.FS implementation that can be used in our cache.FS package.
 
 Here's an example that simply accesses a local Redis instance:
+
 	redisFS, err := redis.New(
 		redis.Args{Addr: "127.0.0.1:6379"},
 		// This causes all files to exire in 5 minutes.

@@ -14,6 +14,7 @@ in the future with enough demand.
 NOTE: NUMBER ONE MISTAKE: FORGETTING .CLOSE() on WRITING A FILE, SO IT DOES NOT WRITE THE FILE.
 
 Open a Blob storage container:
+
 	cred, err := msi.Token(msi.SystemAssigned{})
 	if err != nil {
 		panic(err)
@@ -25,6 +26,7 @@ Open a Blob storage container:
 	}
 
 Read an entire file:
+
 	file, err := fsys.Open("users/jdoak.json")
 	if err != nil {
 		// Do something
@@ -39,6 +41,7 @@ Read an entire file:
 	fmt.Println(string(b))
 
 Stream a file to stdout:
+
 	file, err := fsys.Open("users/jdoak.json")
 	if err != nil {
 		// Do something
@@ -49,6 +52,7 @@ Stream a file to stdout:
 	}
 
 Copy a file:
+
 	src, err := os.Open("path/to/some/file")
 	if err != nil {
 		// Do something
@@ -70,6 +74,7 @@ Copy a file:
 	}
 
 Write a string to a file:
+
 	file, err := fsys.OpenFile("users/jdoak.json", 0644, WithFlags(os.O_WRONLY | os.O_CREATE))
 	if err != nil {
 		// Do something
@@ -86,6 +91,7 @@ Write a string to a file:
 	}
 
 Walk the file system and log all directories:
+
 	err := fs.WalkDir(
 		fsys,
 		".",
