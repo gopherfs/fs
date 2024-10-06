@@ -192,7 +192,7 @@ func (s *FS) OpenFile(name string, perms fs.FileMode, options ...jsfs.OFOption) 
 	}
 
 	// The file already exists.
-	if f, err := s.Open(name); err != nil {
+	if f, err := s.Open(name); err == nil {
 		fi, err := f.Stat()
 		if err != nil {
 			return nil, fmt.Errorf("file exists but could not Stat(): %w", err)
