@@ -58,6 +58,11 @@ func (f *File) Sync() error {
 	return f.file.Sync()
 }
 
+// Truncate changes the size of the file. It does not change the I/O offset.
+func (f *File) Truncate(size int64) error {
+	return f.file.Truncate(size)
+}
+
 type fileInfo struct {
 	fs.FileInfo
 }
