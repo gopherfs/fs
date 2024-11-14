@@ -20,28 +20,42 @@ func (f *File) OSFile() *os.File {
 	return f.file
 }
 
+// ReadDir reads the directory named by dirname and returns a list of directory entries sorted by filename.
 func (f *File) ReadDir(n int) ([]fs.DirEntry, error) {
 	return f.file.ReadDir(n)
 }
 
+// Read reads up to len(b) bytes from the File. It returns the number of bytes read and any error encountered.
 func (f *File) Read(b []byte) (n int, err error) {
 	return f.file.Read(b)
 }
 
+// Seek sets the offset for the next Read or Write on file to offset, interpreted according to whence:
+// 0 means relative to the origin of the file, 1 means relative to the current offset, and
+// 2 means relative to the end. It returns the new offset and an error, if any.
 func (f *File) Seek(offset int64, whence int) (ret int64, err error) {
 	return f.file.Seek(offset, whence)
 }
 
+// Stat returns the FileInfo structure describing file. If there is an error, it will be of type *PathError.
 func (f *File) Stat() (fs.FileInfo, error) {
 	return f.file.Stat()
 }
 
+// Write writes len(b) bytes to the File. It returns the number of bytes written and an error, if any.
 func (f *File) Write(b []byte) (n int, err error) {
 	return f.file.Write(b)
 }
 
+// Close closes the File, rendering it unusable for I/O. It returns an error, if any.
 func (f *File) Close() error {
 	return f.file.Close()
+}
+
+// Sync commits the current contents of the file to stable storage. Typically,
+// this means flushing the file system's in-memory copy of recently written data to disk.
+func (f *File) Sync() error {
+	return f.file.Sync()
 }
 
 type fileInfo struct {

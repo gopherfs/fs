@@ -87,6 +87,20 @@ func (s *FS) ReadDir(name string) ([]fs.DirEntry, error) {
 	return dir.objects, nil
 }
 
+// Mkdir provides a no-op Mkdir for FS. Directories are only made when
+// files are written to them. But this allows for calls by code that can
+// be swapped with an os FS to function.
+func (s *FS) Mkdir(name string, perm fs.FileMode) error {
+	return nil
+}
+
+// MkdirAll provides a no-op MkdirAll for FS. Directories are only made when
+// files are written to them. But this allows for calls by code that can
+// be swapped with an os FS to function.
+func (s *FS) MkdirAll(path string, perm fs.FileMode) error {
+	return nil
+}
+
 func (s *FS) findDir(name string) (*file, error) {
 	switch name {
 	case ".", "", "/":
@@ -585,6 +599,11 @@ func (f *file) Seek(offset int64, whence int) (int64, error) {
 
 // Close implememnts io.Closer.
 func (f *file) Close() error {
+	return nil
+}
+
+// Sync provides a no-op implementation of the os.File.Sync() method.
+func (f *file) Sync() error {
 	return nil
 }
 
